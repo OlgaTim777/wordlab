@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Magic Pot v3.4 - Sorcerer Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-dark: #1a0b2e; 
+            --panel-bg: #2d1b4e; 
+            --gold: #d4af37; 
+            --text-light: #e0dbe9;
+            --accent: #764abc;
+        }
+        * { box-sizing: border-box; user-select: none; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            background: var(--bg-dark); 
+            color: var(--text-light); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+        /* LEFT PANEL */
+        #editor-panel { 
+            width: 420px; 
+            background: var(--panel-bg); 
+            padding: 20px; 
+            border-right: 3px solid var(--gold); 
+            overflow-y: auto; 
+            flex-shrink: 0; 
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+
+        h2 { margin: 0 0 15px 0; font-family: 'Cinzel', serif; color: var(--gold); text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+        .magic-box { 
+            background: rgba(0, 0, 0, 0.4); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid rgba(212, 175, 55, 0.3); 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            transition: border-color 0.3s;
+        }
+        .magic-box:hover { border-color: var(--gold); }
+
+        .magic-box label { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            color: var(--gold); 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            letter-spacing: 1px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+
+        input[type="text"], input[type="number"], textarea, select { 
+            width: 100%; 
+            padding: 8px; 
+            background: #120822; 
+            border: 1px solid #5a3e85; 
+            color: #fff; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            outline: none; 
+            transition: 0.3s;
+        }
+        input:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(212, 175, 55, 0.2); }
+
+        /* File Input Style */
+        input[type="file"] {
+            font-size: 11px;
+            color: #aaa;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+        input[type="file"]::file-selector-button {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        input[type="file"]::file-selector-button:hover { background: #8b5cf6; }
+
+        /* Button */
+        .btn-magic { 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            background: linear-gradient(135deg, #d4af37, #b4941f); 
+            color: #1a0b2e; 
+            font-weight: bold; 
+            width: 100%; 
+            font-family: 'Cinzel', serif; 
+            font-size: 16px; 
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn-magic:active { transform: scale(0.98); }
+
+        /* Checkbox wrapper */
+        .cb-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+        input[type="checkbox"] { accent-color: var(--gold); transform: scale(1.2); }
+
+        #code-output { height: 60px; font-family: monospace; color: #76ff03; border: 1px solid var(--gold); }
+        
+        #preview-area { flex-grow: 1; background: #000; display: flex; flex-direction: column; position: relative; }
+        #live-frame { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+<div id='editor-panel'>
+    <h2>Magic Generator 3.4</h2>
+    
+    <div class='magic-box'>
+        <label>🚀 КОД</label>
+        <button class='btn-magic' onclick='copyCode()'>СКОПИРОВАТЬ КОД</button>
+        <textarea id='code-output' readonly style="margin-top:10px;" placeholder="Код появится здесь..."></textarea>
+    </div>
+
+    <div class='magic-box'>
+        <label>📝 СПИСОК ПРЕДЛОЖЕНИЙ</label>
+        <textarea id='m-list' rows='5' oninput='updateCode()'>the red cat likes fish&#10;small dogs like to bark&#10;magic potion is green</textarea>
+        <div style="font-size:10px; color:#aaa; margin-top:5px;">Введите до 10 предложений (каждое с новой строки). Игра выберет их в случайном порядке.</div>
+    </div>
+
+    <div class='magic-box'>
+        <label>⏱️ ТАЙМЕР</label>
+        <div class='cb-wrap'>
+            <input type='checkbox' id='t-mode' onchange='updateCode()'>
+            <span>Включить ОБРАТНЫЙ отсчет</span>
+        </div>
+        <div class='grid-2'>
+            <input type='number' id='t-val' value='60' placeholder='Сек' oninput='updateCode()'>
+            <input type='color' id='t-col' value='#ffffff' oninput='updateCode()'>
+        </div>
+        <div style="font-size:10px; color:#aaa;">Если галочка снята: таймер считает с 0 вверх.</div>
+    </div>
+
+    <div class='magic-box'>
+        <label>👾 ГЛАВНЫЙ ГЕРОЙ</label>
+        <input type='file' accept="image/*" onchange='handleFile(this, "hero")'>
+        <div class='grid-3'>
+            <input type='number' id='h-s' value='25' title="Размер %" placeholder="Размер %" oninput='updateCode()'>
+            <input type='number' id='h-x' value='75' title="X %" placeholder="X %" oninput='updateCode()'>
+            <input type='number' id='h-y' value='45' title="Y %" placeholder="Y %" oninput='updateCode()'>
+        </div>
+    </div>
+
+    <div class='magic-box'>
+        <label>🏺 КОТЕЛ</label>
+        <input type='file' accept="image/*" onchange='handleFile(this, "pot")'>
+        <div class='grid-2'>
+            <input type='number' id='p-w' value='70' title="Ширина %" placeholder="Ширина %" oninput='updateCode()'>
+            <input type='number' id='p-h' value='50' title="Высота %" placeholder="Высота %" oninput='updateCode()'>
+        </div>
+        <div class='grid-2'>
+            <input type='number' id='p-x' value='50' title="Позиция X %" placeholder="X %" oninput='updateCode()'>
+            <input type='number' id='p-y' value='65' title="Позиция Y %" placeholder="Y %" oninput='updateCode()'>
+        </div>
+    </div>
+
+    <div class='magic-box'>
+        <label>🧪 БАНОЧКИ (СТИЛЬ)</label>
+        <div style="margin-bottom:5px;">Картинка банки:</div>
+        <input type='file' accept="image/*" onchange='handleFile(this, "jar")'>
+        <div class='grid-3'>
+            <input type='color' id='j-col' value='#ffffff' title="Цвет текста" oninput='updateCode()'>
+            <input type='number' id='j-sz' value='14' title="Размер шрифта" placeholder="Размер шрифта" oninput='updateCode()'>
+            <input type='number' id='j-off' value='0' title="Сдвиг текста Y" placeholder="Сдвиг Y px" oninput='updateCode()'>
+        </div>
+    </div>
+
+    <div class='magic-box'>
+        <label>🖼️ ФОН ИГРЫ</label>
+        <input type='file' accept="image/*" onchange='handleFile(this, "bg")'>
+    </div>
+
+    <div class='magic-box'>
+        <label>🎵 АУДИО (ЗАГРУЗКА)</label>
+        <div style="margin-top:5px; font-size:10px;">Фоновая музыка:</div>
+        <input type='file' accept="audio/*" onchange='handleFile(this, "abg")'>
+        <div class='grid-2'>
+            <div>
+                <div style="font-size:10px;">Победа:</div>
+                <input type='file' accept="audio/*" onchange='handleFile(this, "awin")'>
+            </div>
+            <div>
+                <div style="font-size:10px;">Ошибка:</div>
+                <input type='file' accept="audio/*" onchange='handleFile(this, "afail")'>
+            </div>
+        </div>
+    </div>
+
+    <div class='magic-box'>
+        <label>🎁 ПРИЗЫ (НЕСКОЛЬКО)</label>
+        <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
+    </div>
+
+    <div class='magic-box'>
+        <label>💭 ОБЛАЧКО МЫСЛЕЙ</label>
+        <div class='grid-2'>
+            <input type='color' id='c-col' value='#000000' oninput='updateCode()'>
+            <input type='number' id='c-sz' value='18' placeholder="Размер" oninput='updateCode()'>
+        </div>
+        <select id='c-font' onchange='updateCode()'>
+            <option value='Segoe UI'>Стандарт</option>
+            <option value='Verdana'>Verdana</option>
+            <option value='Comic Sans MS'>Comic Sans</option>
+        </select>
+    </div>
+</div>
+
+<div id='preview-area'>
+    <iframe id="live-frame"></iframe>
+</div>
+
+<script>
+    // Хранилище Base64 данных
+    const assets = {
+        bg: "https://i.imgur.com/UEU5VeO.jpeg",
+        hero: "https://i.ibb.co/m5pXm6S/monster.png",
+        pot: "https://i.imgur.com/eZ1HWGL.png", // Дефолт котла
+        jar: "https://i.imgur.com/zn0Uxnh.png",
+        abg: "",
+        awin: "https://actions.google.com/sounds/v1/cartoon/clime_up_the_ladder.ogg",
+        afail: "https://actions.google.com/sounds/v1/cartoon/boing.ogg",
+        prizes: []
+    };
+
+    function handleFile(input, key) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                assets[key] = e.target.result;
+                updateCode();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function handlePrizes(input) {
+        assets.prizes = [];
+        if (input.files) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    assets.prizes.push(e.target.result);
+                    updateCode(); // Обновляем после каждого, но лучше бы ждать всех
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    function updateCode() {
+        const config = {
+            m: document.getElementById('m-list').value,
+            timer: {
+                mode: document.getElementById('t-mode').checked ? 'down' : 'up',
+                val: document.getElementById('t-val').value,
+                col: document.getElementById('t-col').value
+            },
+            hero: {
+                s: document.getElementById('h-s').value,
+                x: document.getElementById('h-x').value,
+                y: document.getElementById('h-y').value
+            },
+            pot: {
+                w: document.getElementById('p-w').value,
+                h: document.getElementById('p-h').value,
+                x: document.getElementById('p-x').value,
+                y: document.getElementById('p-y').value
+            },
+            jar: {
+                col: document.getElementById('j-col').value,
+                sz: document.getElementById('j-sz').value,
+                off: document.getElementById('j-off').value
+            },
+            cloud: {
+                col: document.getElementById('c-col').value,
+                sz: document.getElementById('c-sz').value,
+                fnt: document.getElementById('c-font').value
+            },
+            assets: assets
+        };
+
+        const jsCode = `
+            var c = ${JSON.stringify(config)};
+            var sentences = c.m.split("\\n").filter(s => s.trim()).sort(() => Math.random() - 0.5);
+            var step = 0;
+            var score = 0;
+            
+            // Таймер
+            var timeVal = c.timer.mode === 'down' ? parseInt(c.timer.val) : 0;
+            var timerInt;
+            
+            var audBG = c.assets.abg ? new Audio(c.assets.abg) : null;
+            if(audBG) audBG.loop = true;
+
+            function startTimer() {
+                if(timerInt) return;
+                timerInt = setInterval(() => {
+                    if(c.timer.mode === 'down') {
+                        timeVal--;
+                        if(timeVal <= 0) { timeVal = 0; clearInterval(timerInt); finishGame(); }
+                    } else {
+                        timeVal++;
+                    }
+                    updateTimeDisplay();
+                }, 1000);
+            }
+
+            function updateTimeDisplay() {
+                var m = Math.floor(timeVal / 60);
+                var s = timeVal % 60;
+                document.getElementById('tv').innerText = (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
+            }
+
+            function initLevel() {
+                if(step >= sentences.length) { finishGame(); return; }
+                
+                var currentText = sentences[step];
+                
+                // Настройка героя и облака
+                document.getElementById('hc').innerText = currentText;
+                document.getElementById('hc').style.display = 'none'; // Скрыть
+
+                // Очистка полей
+                var cz = document.getElementById('cz'); // Котел (зона слотов)
+                cz.innerHTML = '';
+                var bui = document.getElementById('bui'); // Зона банок
+                bui.innerHTML = '';
+
+                // Создание слотов в котле
+                var words = currentText.split(/\\s+/);
+                var slotsHTML = '<div class="row">';
+                words.forEach((w, i) => {
+                    slotsHTML += '<div class="slot" id="s-' + i + '"></div>';
+                });
+                slotsHTML += '</div>';
+                cz.innerHTML = slotsHTML;
+
+                // Создание баночек (перемешанных)
+                var jarWords = [...words].sort(() => Math.random() - 0.5);
+                
+                // Позиционирование банок
+                // Раскидываем банки вокруг котла (простая сетка для примера, или случайная позиция)
+                // Для красоты используем фиксированную сетку слева
+                jarWords.forEach((w, i) => {
+                    var card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerText = w;
+                    // Случайный разброс слева
+                    var rx = Math.random() * 20 + 5; // 5-25% left
+                    var ry = Math.random() * 60 + 10; // 10-70% top
+                    
+                    // Фиксированная расстановка, чтобы не перекрывали
+                    // Просто столбиком слева для аккуратности, как в примере
+                    var col = i % 2; 
+                    var row = Math.floor(i / 2);
+                    
+                    card.style.left = (20 + col * 120) + 'px';
+                    card.style.top = (50 + row * 100) + 'px';
+                    
+                    card.onclick = function() {
+                        if(audBG && audBG.paused) try{ audBG.play(); } catch(e){}
+                        startTimer();
+
+                        if(card.parentNode.className === 'slot') {
+                            // Вернуть в поле (штраф?)
+                            document.getElementById('bui').appendChild(card);
+                            card.style.position = 'absolute';
+                            card.style.left = (20 + col * 120) + 'px'; // Возврат на место
+                            card.style.top = (50 + row * 100) + 'px';
+                        } else {
+                            // Поместить в первый пустой слот
+                            var empty = Array.from(document.querySelectorAll('.slot')).find(s => s.children.length === 0);
+                            if(empty) {
+                                card.style.position = 'static'; // В слоте статика
+                                card.style.transform = 'none';
+                                empty.appendChild(card);
+                            }
+                        }
+                    };
+                    bui.appendChild(card);
+                });
+
+                // Обновить счет
+                document.getElementById('sv').innerText = score;
+            }
+
+            function check() {
+                var target = sentences[step].split(/\\s+/);
+                var ok = true;
+                target.forEach((t, i) => {
+                    var s = document.getElementById('s-'+i);
+                    var w = s.firstChild ? s.firstChild.innerText : "";
+                    if(w !== t) ok = false;
+                });
+
+                if(ok) {
+                    // WIN
+                    if(c.assets.awin) new Audio(c.assets.awin).play();
+                    score += 10;
+                    step++;
+                    spawnPrize();
+                    setTimeout(initLevel, 2500);
+                } else {
+                    // FAIL
+                    if(c.assets.afail) new Audio(c.assets.afail).play();
+                    var gv = document.getElementById('gv');
+                    gv.style.boxShadow = "inset 0 0 100px red";
+                    setTimeout(() => gv.style.boxShadow = "none", 500);
+                }
+            }
+
+            function spawnPrize() {
+                if(!c.assets.prizes.length) return;
+                var p = document.createElement("div"); 
+                p.className="prize";
+                p.style.backgroundImage = "url('"+c.assets.prizes[Math.floor(Math.random()*c.assets.prizes.length)]+"')";
+                document.getElementById("gv").appendChild(p);
+                setTimeout(()=>p.remove(), 3000);
+            }
+
+            function finishGame() {
+                clearInterval(timerInt);
+                document.getElementById('fin').style.display = 'flex';
+                document.getElementById('f-score').innerText = score;
+            }
+
+            function toggleHint() {
+                var h = document.getElementById('hc');
+                h.style.display = (h.style.display === 'block') ? 'none' : 'block';
+            }
+            
+            function speak() {
+               var txt = document.getElementById("hc").innerText;
+               if(!txt) return;
+               var u = new SpeechSynthesisUtterance(txt);
+               u.lang = "en-US";
+               speechSynthesis.speak(u);
+            }
+
+            updateTimeDisplay();
+            initLevel();
+        `;
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <style>
+                body { margin:0; overflow:hidden; font-family: '${config.cloud.fnt}', sans-serif; background: #000; }
+                #gv { width: 100vw; height: 100vh; position: relative; background: url('${config.assets.bg}') center/cover no-repeat; }
+                
+                /* HERO */
+                #hr { 
+                    position: absolute; 
+                    width: ${config.hero.s}%; 
+                    height: ${config.hero.s}%; 
+                    left: ${config.hero.x}%; 
+                    top: ${config.hero.y}%; 
+                    transform: translate(-50%, -50%);
+                    background: url('${config.assets.hero}') center/contain no-repeat; 
+                    z-index: 10; 
+                    cursor: pointer;
+                    animation: float 3s ease-in-out infinite;
+                }
+                @keyframes float { 0%,100%{transform:translate(-50%,-50%);} 50%{transform:translate(-50%,calc(-50% - 15px));} }
+
+                /* THOUGHT CLOUD */
+                #hc {
+                    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+                    background: rgba(230, 240, 255, 0.9);
+                    border: 2px solid #fff;
+                    border-radius: 20px;
+                    padding: 15px;
+                    min-width: 150px;
+                    text-align: center;
+                    display: none;
+                    color: ${config.cloud.col};
+                    font-size: ${config.cloud.sz}px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    pointer-events: none;
+                    white-space: nowrap;
+                }
+                #hc::after { content:''; position:absolute; top:100%; left:50%; margin-left:-10px; border:10px solid transparent; border-top-color:rgba(230, 240, 255, 0.9); }
+
+                /* POT ZONE (Container for slots) */
+                #cz {
+                    position: absolute;
+                    width: ${config.pot.w}%;
+                    height: ${config.pot.h}%;
+                    left: ${config.pot.x}%;
+                    top: ${config.pot.y}%;
+                    transform: translate(-50%, -50%);
+                    background: url('${config.assets.pot}') center/contain no-repeat;
+                    z-index: 5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .row { display: flex; gap: 10px; justify-content: center; width: 80%; flex-wrap: wrap; margin-top: 10%; }
+                .slot { 
+                    width: 80px; height: 100px; 
+                    border: 2px dashed rgba(255,255,255,0.4); 
+                    border-radius: 10px; 
+                    display: flex; align-items: center; justify-content: center;
+                }
+
+                /* JARS (CARDS) */
+                #bui { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+                .card {
+                    pointer-events: auto;
+                    position: absolute;
+                    width: 80px; height: 100px;
+                    background: url('${config.assets.jar}') center/contain no-repeat;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    color: ${config.jar.col};
+                    font-size: ${config.jar.sz}px;
+                    font-weight: bold;
+                    text-shadow: 1px 1px 2px black;
+                    padding-top: ${config.jar.off}px;
+                    transition: transform 0.2s;
+                }
+                .card:hover { transform: scale(1.1); }
+
+                /* UI ELEMENTS */
+                #ui-bar {
+                    position: absolute; top: 15px; left: 15px;
+                    display: flex; gap: 15px;
+                    background: rgba(0,0,0,0.6);
+                    padding: 10px 20px;
+                    border-radius: 30px;
+                    border: 2px solid #d4af37;
+                    color: ${config.timer.col};
+                    font-size: 20px;
+                    font-weight: bold;
+                    z-index: 100;
+                }
+                #spk { position: absolute; top: 15px; right: 15px; font-size: 30px; cursor: pointer; z-index: 100; filter: drop-shadow(0 0 5px white); }
+
+                /* BUTTONS */
+                .game-btn {
+                    position: absolute; bottom: 20px; left: 20px;
+                    background: linear-gradient(to bottom, #4cd964, #28a745);
+                    border: 2px solid #fff;
+                    color: white;
+                    padding: 10px 25px;
+                    border-radius: 20px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    z-index: 50;
+                    box-shadow: 0 4px 0 #1e7e34;
+                }
+                .game-btn:active { transform: translateY(4px); box-shadow: none; }
+                #btn-reset { left: 160px; background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
+
+                /* FINISH SCREEN */
+                #fin {
+                    position: absolute; inset: 0;
+                    background: rgba(20, 10, 40, 0.95);
+                    display: none;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    color: #ffd700;
+                    text-align: center;
+                }
+                #fin h1 { font-family: serif; font-size: 4em; margin: 0; text-shadow: 0 0 20px #d4af37; }
+                #fin p { font-size: 1.5em; color: white; }
+                
+                .prize {
+                    position: absolute; left: 50%; top: 50%;
+                    width: 200px; height: 200px;
+                    background-size: contain; background-repeat: no-repeat; background-position: center;
+                    transform: translate(-50%, -50%);
+                    animation: popUp 3s forwards;
+                    z-index: 200;
+                }
+                @keyframes popUp { 0%{scale:0;} 20%{scale:1.5;} 80%{opacity:1;} 100%{opacity:0; transform:translate(-50%, -200%);} }
+
+            </style>
+            </head>
+            <body>
+                <div id="gv">
+                    <div id="ui-bar">
+                        <span>🏆 <span id="sv">0</span></span>
+                        <span>⏳ <span id="tv">00:00</span></span>
+                    </div>
+                    <div id="spk" onclick="speak()">🔊</div>
+                    
+                    <div id="hr" onclick="toggleHint()"><div id="hc"></div></div>
+                    
+                    <div id="cz"></div>
+                    <div id="bui"></div>
+                    
+                    <button class="game-btn" onclick="check()">ПРОВЕРИТЬ</button>
+                    <button class="game-btn" id="btn-reset" onclick="initLevel()">СБРОС</button>
+                    
+                    <div id="fin">
+                        <h1>Magic Complete!</h1>
+                        <p>Твой результат: <span id="f-score">0</span></p>
+                        <button class="game-btn" style="position:static; margin-top:20px;" onclick="location.reload()">ИГРАТЬ СНОВА</button>
+                    </div>
+                </div>
+                <script>${jsCode}<\/script>
+            </body>
+            </html>
+        `;
+
+        document.getElementById('code-output').value = `<iframe width="100%" height="100%" frameborder="0" srcdoc='${html.replace(/'/g, "&#39;")}'></iframe>`;
+        document.getElementById('live-frame').srcdoc = html;
+    }
+
+    function copyCode() {
+        document.getElementById('code-output').select();
+        document.execCommand('copy');
+        alert('Магический код скопирован!');
+    }
+
+    // Инит
+    window.onload = updateCode;
+</script>
+</body>
+</html>
