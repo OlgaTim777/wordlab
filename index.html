@@ -2,7 +2,7 @@
 <html lang='ru'>
 <head>
     <meta charset='UTF-8'>
-    <title>Magic Pot v3.4 - Sorcerer Edition</title>
+    <title>Magic Pot v4.1 - Sorcerer Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -127,7 +127,7 @@
 <body>
 
 <div id='editor-panel'>
-    <h2>Magic Generator 3.4</h2>
+    <h2>Magic Generator 4.1</h2>
     
     <div class='magic-box'>
         <label>🚀 КОД</label>
@@ -136,13 +136,23 @@
     </div>
 
     <div class='magic-box'>
-        <label>📝 СПИСОК ПРЕДЛОЖЕНИЙ</label>
-        <textarea id='m-list' rows='5' oninput='updateCode()'>the red cat likes fish&#10;small dogs like to bark&#10;magic potion is green</textarea>
-        <div style="font-size:10px; color:#aaa; margin-top:5px;">Введите до 10 предложений (каждое с новой строки). Игра выберет их в случайном порядке.</div>
+        <label>🛡️ ЛОГОТИП</label>
+        <input type='file' accept="image/*" onchange='handleFile(this, "logo")'>
+        <input type='text' id='l-link' placeholder="Ссылка при клике (https://...)" oninput='updateCode()' style="margin-bottom:5px;">
+        <div class='grid-2'>
+            <input type='number' id='l-x' value='5' title="X %" placeholder="X %" oninput='updateCode()'>
+            <input type='number' id='l-y' value='5' title="Y %" placeholder="Y %" oninput='updateCode()'>
+        </div>
     </div>
 
     <div class='magic-box'>
-        <label>⏱️ ТАЙМЕР</label>
+        <label>📝 СПИСОК ПРЕДЛОЖЕНИЙ</label>
+        <textarea id='m-list' rows='5' oninput='updateCode()'>the red cat likes fish&#10;small dogs like to bark&#10;magic potion is green</textarea>
+        <div style="font-size:10px; color:#aaa; margin-top:5px;">Введите до 10 предложений.</div>
+    </div>
+
+    <div class='magic-box'>
+        <label>⏱️ ТАЙМЕР И СЧЕТ</label>
         <div class='cb-wrap'>
             <input type='checkbox' id='t-mode' onchange='updateCode()'>
             <span>Включить ОБРАТНЫЙ отсчет</span>
@@ -151,7 +161,6 @@
             <input type='number' id='t-val' value='60' placeholder='Сек' oninput='updateCode()'>
             <input type='color' id='t-col' value='#ffffff' oninput='updateCode()'>
         </div>
-        <div style="font-size:10px; color:#aaa;">Если галочка снята: таймер считает с 0 вверх.</div>
     </div>
 
     <div class='magic-box'>
@@ -159,7 +168,7 @@
         <input type='file' accept="image/*" onchange='handleFile(this, "hero")'>
         <div class='grid-3'>
             <input type='number' id='h-s' value='25' title="Размер %" placeholder="Размер %" oninput='updateCode()'>
-            <input type='number' id='h-x' value='75' title="X %" placeholder="X %" oninput='updateCode()'>
+            <input type='number' id='h-x' value='80' title="X %" placeholder="X %" oninput='updateCode()'>
             <input type='number' id='h-y' value='45' title="Y %" placeholder="Y %" oninput='updateCode()'>
         </div>
     </div>
@@ -175,11 +184,21 @@
             <input type='number' id='p-x' value='50' title="Позиция X %" placeholder="X %" oninput='updateCode()'>
             <input type='number' id='p-y' value='65' title="Позиция Y %" placeholder="Y %" oninput='updateCode()'>
         </div>
+        
+        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #5a3e85;">
+            <div style="font-size:10px; margin-bottom:5px;">☠️ Картинка при ошибке (из котла):</div>
+            <input type='file' accept="image/*" onchange='handleFile(this, "failItem")'>
+        </div>
     </div>
 
     <div class='magic-box'>
-        <label>🧪 БАНОЧКИ (СТИЛЬ)</label>
-        <div style="margin-bottom:5px;">Картинка банки:</div>
+        <label>🧪 БАНОЧКИ (БАНК СЛОВ)</label>
+        <div style="margin-bottom:5px;">Позиция банка слов:</div>
+        <div class='grid-2' style="margin-bottom:10px;">
+            <input type='number' id='j-bx' value='10' title="Позиция X px" placeholder="X (отступ слева)" oninput='updateCode()'>
+            <input type='number' id='j-by' value='100' title="Позиция Y px" placeholder="Y (отступ сверху)" oninput='updateCode()'>
+        </div>
+        <div style="margin-bottom:5px;">Стиль баночек:</div>
         <input type='file' accept="image/*" onchange='handleFile(this, "jar")'>
         <div class='grid-3'>
             <input type='color' id='j-col' value='#ffffff' title="Цвет текста" oninput='updateCode()'>
@@ -210,7 +229,7 @@
     </div>
 
     <div class='magic-box'>
-        <label>🎁 ПРИЗЫ (НЕСКОЛЬКО)</label>
+        <label>🎁 ПРИЗЫ</label>
         <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
     </div>
 
@@ -237,11 +256,13 @@
     const assets = {
         bg: "https://i.imgur.com/UEU5VeO.jpeg",
         hero: "https://i.ibb.co/m5pXm6S/monster.png",
-        pot: "https://i.imgur.com/eZ1HWGL.png", // Дефолт котла
+        pot: "https://i.imgur.com/eZ1HWGL.png", 
         jar: "https://i.imgur.com/zn0Uxnh.png",
         abg: "",
         awin: "https://actions.google.com/sounds/v1/cartoon/clime_up_the_ladder.ogg",
         afail: "https://actions.google.com/sounds/v1/cartoon/boing.ogg",
+        logo: "", // NEW
+        failItem: "https://cdn-icons-png.flaticon.com/512/179/179657.png", // Default sad face
         prizes: []
     };
 
@@ -263,7 +284,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     assets.prizes.push(e.target.result);
-                    updateCode(); // Обновляем после каждого, но лучше бы ждать всех
+                    updateCode(); 
                 }
                 reader.readAsDataURL(file);
             });
@@ -292,12 +313,19 @@
             jar: {
                 col: document.getElementById('j-col').value,
                 sz: document.getElementById('j-sz').value,
-                off: document.getElementById('j-off').value
+                off: document.getElementById('j-off').value,
+                bx: document.getElementById('j-bx').value,
+                by: document.getElementById('j-by').value
             },
             cloud: {
                 col: document.getElementById('c-col').value,
                 sz: document.getElementById('c-sz').value,
                 fnt: document.getElementById('c-font').value
+            },
+            logo: {
+                x: document.getElementById('l-x').value,
+                y: document.getElementById('l-y').value,
+                link: document.getElementById('l-link').value
             },
             assets: assets
         };
@@ -334,6 +362,10 @@
                 document.getElementById('tv').innerText = (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
             }
 
+            function updateScore() {
+                document.getElementById('sv').innerText = score;
+            }
+
             function initLevel() {
                 if(step >= sentences.length) { finishGame(); return; }
                 
@@ -341,13 +373,16 @@
                 
                 // Настройка героя и облака
                 document.getElementById('hc').innerText = currentText;
-                document.getElementById('hc').style.display = 'none'; // Скрыть
+                document.getElementById('hc').style.display = 'none';
 
                 // Очистка полей
-                var cz = document.getElementById('cz'); // Котел (зона слотов)
+                var cz = document.getElementById('cz'); 
                 cz.innerHTML = '';
-                var bui = document.getElementById('bui'); // Зона банок
+                var bui = document.getElementById('bui');
                 bui.innerHTML = '';
+                // Удаляем старые эффекты если есть
+                var oldFire = document.querySelector('.fire-fx');
+                if(oldFire) oldFire.remove();
 
                 // Создание слотов в котле
                 var words = currentText.split(/\\s+/);
@@ -361,50 +396,50 @@
                 // Создание баночек (перемешанных)
                 var jarWords = [...words].sort(() => Math.random() - 0.5);
                 
-                // Позиционирование банок
-                // Раскидываем банки вокруг котла (простая сетка для примера, или случайная позиция)
-                // Для красоты используем фиксированную сетку слева
                 jarWords.forEach((w, i) => {
                     var card = document.createElement('div');
                     card.className = 'card';
                     card.innerText = w;
-                    // Случайный разброс слева
-                    var rx = Math.random() * 20 + 5; // 5-25% left
-                    var ry = Math.random() * 60 + 10; // 10-70% top
                     
-                    // Фиксированная расстановка, чтобы не перекрывали
-                    // Просто столбиком слева для аккуратности, как в примере
+                    // Позиция из настроек
                     var col = i % 2; 
                     var row = Math.floor(i / 2);
+                    var startX = parseInt(c.jar.bx);
+                    var startY = parseInt(c.jar.by);
                     
-                    card.style.left = (20 + col * 120) + 'px';
-                    card.style.top = (50 + row * 100) + 'px';
+                    card.style.left = (startX + col * 100) + 'px';
+                    card.style.top = (startY + row * 90) + 'px';
                     
                     card.onclick = function() {
                         if(audBG && audBG.paused) try{ audBG.play(); } catch(e){}
                         startTimer();
 
                         if(card.parentNode.className === 'slot') {
-                            // Вернуть в поле (штраф?)
+                            // Вернуть в банк
                             document.getElementById('bui').appendChild(card);
                             card.style.position = 'absolute';
-                            card.style.left = (20 + col * 120) + 'px'; // Возврат на место
-                            card.style.top = (50 + row * 100) + 'px';
+                            card.style.left = (startX + col * 100) + 'px';
+                            card.style.top = (startY + row * 90) + 'px';
+                            // Штраф за возврат
+                            score--;
+                            updateScore();
                         } else {
                             // Поместить в первый пустой слот
                             var empty = Array.from(document.querySelectorAll('.slot')).find(s => s.children.length === 0);
                             if(empty) {
-                                card.style.position = 'static'; // В слоте статика
+                                card.style.position = 'static'; 
                                 card.style.transform = 'none';
                                 empty.appendChild(card);
+                                // Бонус за постановку
+                                score++;
+                                updateScore();
                             }
                         }
                     };
                     bui.appendChild(card);
                 });
 
-                // Обновить счет
-                document.getElementById('sv').innerText = score;
+                updateScore();
             }
 
             function check() {
@@ -419,16 +454,93 @@
                 if(ok) {
                     // WIN
                     if(c.assets.awin) new Audio(c.assets.awin).play();
-                    score += 10;
-                    step++;
-                    spawnPrize();
-                    setTimeout(initLevel, 2500);
+                    
+                    // Запуск пузырей (УВЕЛИЧЕНО В 2 РАЗА)
+                    spawnBubbles();
+                    
+                    // Приз вылетает через 2 секунды после пузырей
+                    setTimeout(spawnPrize, 2000);
+
+                    // Следующий уровень
+                    setTimeout(() => {
+                        step++;
+                        initLevel();
+                    }, 4000);
                 } else {
                     // FAIL
                     if(c.assets.afail) new Audio(c.assets.afail).play();
-                    var gv = document.getElementById('gv');
-                    gv.style.boxShadow = "inset 0 0 100px red";
-                    setTimeout(() => gv.style.boxShadow = "none", 500);
+                    
+                    // Эффект огня
+                    showFire();
+
+                    // Штраф за ошибку
+                    score -= 5;
+                    updateScore();
+                }
+            }
+
+            function showFire() {
+                var cz = document.getElementById('cz');
+                var f = document.createElement('div');
+                f.className = 'fire-fx';
+                cz.appendChild(f);
+                
+                // Удаляем огонь через 2.5 сек (вспышка и угасание)
+                setTimeout(() => f.remove(), 2500);
+
+                // Спавн негативных эмоджи за 1 сек до угасания (огонь 2.5с, значит спавн на 1.5с)
+                if(c.assets.failItem) {
+                   setTimeout(spawnFailItems, 1500);
+                }
+            }
+
+            function spawnFailItems() {
+                 var gv = document.getElementById("gv");
+                 // Вылетают 10 штук
+                 for(let i=0; i<10; i++) {
+                    setTimeout(() => {
+                        var b = document.createElement('div');
+                        b.className = 'fail-item';
+                        b.style.backgroundImage = "url('"+c.assets.failItem+"')";
+                        
+                        // Старт от котла
+                        b.style.left = c.pot.x + '%';
+                        b.style.top = c.pot.y + '%';
+                        
+                        // Разлет
+                        var rX = (Math.random() - 0.5) * 200;
+                        var rY = - (Math.random() * 200 + 100);
+                        
+                        b.style.setProperty('--tx', rX + 'px');
+                        b.style.setProperty('--ty', rY + 'px');
+
+                        gv.appendChild(b);
+                        setTimeout(() => b.remove(), 1000);
+                    }, i * 50);
+                 }
+            }
+
+            function spawnBubbles() {
+                var pot = document.getElementById('cz');
+                // Спавн 80 пузырей (УВЕЛИЧЕНО)
+                for(let i=0; i<80; i++) {
+                    setTimeout(() => {
+                        var b = document.createElement('div');
+                        b.className = 'bubble';
+                        
+                        var s = Math.random() * 20 + 10;
+                        b.style.width = s + 'px';
+                        b.style.height = s + 'px';
+                        
+                        var rX = (Math.random() - 0.5) * 100;
+                        b.style.left = 'calc(50% + ' + rX + 'px)';
+                        
+                        var cols = ['#9b59b6', '#2ecc71', '#f1c40f', '#e74c3c'];
+                        b.style.background = cols[Math.floor(Math.random()*cols.length)];
+                        
+                        pot.appendChild(b);
+                        setTimeout(() => b.remove(), 2000);
+                    }, i * 20); // Чуть быстрее частота спавна
                 }
             }
 
@@ -437,8 +549,13 @@
                 var p = document.createElement("div"); 
                 p.className="prize";
                 p.style.backgroundImage = "url('"+c.assets.prizes[Math.floor(Math.random()*c.assets.prizes.length)]+"')";
-                document.getElementById("gv").appendChild(p);
-                setTimeout(()=>p.remove(), 3000);
+                
+                var gv = document.getElementById("gv");
+                p.style.left = c.pot.x + '%';
+                p.style.bottom = (100 - parseInt(c.pot.y)) + 10 + '%'; 
+                
+                gv.appendChild(p);
+                setTimeout(()=>p.remove(), 2000);
             }
 
             function finishGame() {
@@ -461,6 +578,7 @@
             }
 
             updateTimeDisplay();
+            updateScore();
             initLevel();
         `;
 
@@ -487,25 +605,46 @@
                 }
                 @keyframes float { 0%,100%{transform:translate(-50%,-50%);} 50%{transform:translate(-50%,calc(-50% - 15px));} }
 
-                /* THOUGHT CLOUD */
+                /* LOGO */
+                #logo {
+                    position: absolute;
+                    left: ${config.logo.x}%;
+                    top: ${config.logo.y}%;
+                    width: 150px;
+                    height: auto;
+                    z-index: 150;
+                    cursor: ${config.logo.link ? 'pointer' : 'default'};
+                }
+
+                /* COMIC THOUGHT CLOUD */
                 #hc {
-                    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-                    background: rgba(230, 240, 255, 0.9);
-                    border: 2px solid #fff;
-                    border-radius: 20px;
-                    padding: 15px;
-                    min-width: 150px;
+                    position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
+                    background: #fff;
+                    border: 3px solid #000;
+                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                    padding: 25px 30px;
+                    min-width: 180px;
                     text-align: center;
                     display: none;
                     color: ${config.cloud.col};
                     font-size: ${config.cloud.sz}px;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
                     pointer-events: none;
                     white-space: nowrap;
+                    font-weight: bold;
+                    z-index: 200;
                 }
-                #hc::after { content:''; position:absolute; top:100%; left:50%; margin-left:-10px; border:10px solid transparent; border-top-color:rgba(230, 240, 255, 0.9); }
+                /* Хвостик облака */
+                #hc::after { 
+                    content:''; position:absolute; top:95%; left:20%; 
+                    width: 20px; height: 20px;
+                    background: #fff; border: 3px solid #000;
+                    border-top: none; border-right: none;
+                    border-radius: 0 0 0 100%;
+                    transform: rotate(-10deg);
+                }
 
-                /* POT ZONE (Container for slots) */
+                /* POT ZONE */
                 #cz {
                     position: absolute;
                     width: ${config.pot.w}%;
@@ -520,15 +659,17 @@
                     justify-content: center;
                 }
 
-                .row { display: flex; gap: 10px; justify-content: center; width: 80%; flex-wrap: wrap; margin-top: 10%; }
+                .row { display: flex; gap: 10px; justify-content: center; width: 80%; flex-wrap: wrap; margin-top: 10%; z-index: 6; }
                 .slot { 
                     width: 80px; height: 100px; 
                     border: 2px dashed rgba(255,255,255,0.4); 
                     border-radius: 10px; 
                     display: flex; align-items: center; justify-content: center;
+                    position: relative;
+                    z-index: 7;
                 }
 
-                /* JARS (CARDS) */
+                /* JARS */
                 #bui { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
                 .card {
                     pointer-events: auto;
@@ -548,6 +689,55 @@
                 }
                 .card:hover { transform: scale(1.1); }
 
+                /* BUBBLES */
+                .bubble {
+                    position: absolute;
+                    bottom: 50%; left: 50%;
+                    border-radius: 50%;
+                    box-shadow: inset 0 0 5px rgba(255,255,255,0.8);
+                    opacity: 0;
+                    animation: bubbleRise 2s ease-out forwards;
+                    z-index: 100;
+                    border: 1px solid rgba(255,255,255,0.4);
+                }
+                @keyframes bubbleRise {
+                    0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+                    50% { transform: translate(calc(-50% + 10px), -150px) scale(1); opacity: 0.8; }
+                    100% { transform: translate(calc(-50% - 10px), -300px) scale(1.2); opacity: 0; }
+                }
+
+                /* FIRE EFFECT */
+                .fire-fx {
+                    position: absolute;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, rgba(255,200,0,0.8) 0%, rgba(255,69,0,0.6) 40%, transparent 70%);
+                    box-shadow: 0 0 60px 30px rgba(255,69,0,0.5);
+                    z-index: 4;
+                    animation: burn 2.5s ease-out forwards;
+                    pointer-events: none;
+                }
+                @keyframes burn {
+                    0% { opacity: 0; transform: scale(0.5); }
+                    10% { opacity: 1; transform: scale(1.1); }
+                    20% { opacity: 1; transform: scale(0.9); box-shadow: 0 0 80px 40px rgba(255,0,0,0.7); }
+                    80% { opacity: 1; transform: scale(1); }
+                    100% { opacity: 0; transform: scale(1.2); }
+                }
+
+                /* FAIL ITEMS */
+                .fail-item {
+                    position: absolute;
+                    width: 40px; height: 40px;
+                    background-size: contain; background-repeat: no-repeat;
+                    z-index: 200;
+                    animation: failFly 1s ease-out forwards;
+                }
+                @keyframes failFly {
+                    0% { opacity:1; transform: translate(-50%, -50%) scale(0.5); }
+                    100% { opacity:0; transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(720deg); }
+                }
+
                 /* UI ELEMENTS */
                 #ui-bar {
                     position: absolute; top: 15px; left: 15px;
@@ -563,9 +753,16 @@
                 }
                 #spk { position: absolute; top: 15px; right: 15px; font-size: 30px; cursor: pointer; z-index: 100; filter: drop-shadow(0 0 5px white); }
 
-                /* BUTTONS */
+                /* BUTTONS CONTAINER (BOTTOM RIGHT) */
+                #btn-container {
+                    position: absolute;
+                    bottom: 38px; /* ~10mm */
+                    right: 38px;  /* ~10mm */
+                    display: flex;
+                    gap: 15px;
+                    z-index: 50;
+                }
                 .game-btn {
-                    position: absolute; bottom: 20px; left: 20px;
                     background: linear-gradient(to bottom, #4cd964, #28a745);
                     border: 2px solid #fff;
                     color: white;
@@ -574,11 +771,10 @@
                     font-size: 16px;
                     font-weight: bold;
                     cursor: pointer;
-                    z-index: 50;
                     box-shadow: 0 4px 0 #1e7e34;
                 }
                 .game-btn:active { transform: translateY(4px); box-shadow: none; }
-                #btn-reset { left: 160px; background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
+                #btn-reset { background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
 
                 /* FINISH SCREEN */
                 #fin {
@@ -596,14 +792,18 @@
                 #fin p { font-size: 1.5em; color: white; }
                 
                 .prize {
-                    position: absolute; left: 50%; top: 50%;
-                    width: 200px; height: 200px;
+                    position: absolute;
+                    width: 150px; height: 150px;
                     background-size: contain; background-repeat: no-repeat; background-position: center;
-                    transform: translate(-50%, -50%);
-                    animation: popUp 3s forwards;
+                    transform: translate(-50%, 0);
+                    animation: popUp 2s ease-out forwards;
                     z-index: 200;
                 }
-                @keyframes popUp { 0%{scale:0;} 20%{scale:1.5;} 80%{opacity:1;} 100%{opacity:0; transform:translate(-50%, -200%);} }
+                @keyframes popUp { 
+                    0% { transform: translate(-50%, 50px) scale(0); opacity: 0; }
+                    50% { transform: translate(-50%, -20px) scale(1.2); opacity: 1; }
+                    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+                }
 
             </style>
             </head>
@@ -615,18 +815,22 @@
                     </div>
                     <div id="spk" onclick="speak()">🔊</div>
                     
+                    ${config.assets.logo ? `<a href="${config.logo.link}" target="_blank"><img id="logo" src="${config.assets.logo}"></a>` : ''}
+
                     <div id="hr" onclick="toggleHint()"><div id="hc"></div></div>
                     
                     <div id="cz"></div>
                     <div id="bui"></div>
                     
-                    <button class="game-btn" onclick="check()">ПРОВЕРИТЬ</button>
-                    <button class="game-btn" id="btn-reset" onclick="initLevel()">СБРОС</button>
+                    <div id="btn-container">
+                        <button class="game-btn" id="btn-reset" onclick="initLevel()">СБРОС</button>
+                        <button class="game-btn" onclick="check()">ПРОВЕРИТЬ</button>
+                    </div>
                     
                     <div id="fin">
                         <h1>Magic Complete!</h1>
                         <p>Твой результат: <span id="f-score">0</span></p>
-                        <button class="game-btn" style="position:static; margin-top:20px;" onclick="location.reload()">ИГРАТЬ СНОВА</button>
+                        <button class="game-btn" style="margin-top:20px;" onclick="location.reload()">ИГРАТЬ СНОВА</button>
                     </div>
                 </div>
                 <script>${jsCode}<\/script>
