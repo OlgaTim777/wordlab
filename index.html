@@ -229,12 +229,23 @@
     </div>
 
     <div class='magic-box'>
-        <label>🎁 ПРИЗЫ</label>
-        <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
-    </div><div class="emoji-upload-group" style="margin-top: 15px;">
-    <label class="emoji-label" style="display: block; color: #ccc; margin-bottom: 5px; font-size: 14px;">Или впишите до 10 эмоджи:</label>
-    <input type="text" id="correct-emojis" placeholder="🍬, 🦄, 🧙‍♂️, ⭐, 🐸, 🔮, 🍄, 🔑" 
-           style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px;">
+    <label>🎁 ПРИЗЫ</label>
+    <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
+    <div class="emoji-upload-group" style="margin-top: 15px;">
+        <label class="emoji-label" style="display: block; color: #ccc; margin-bottom: 5px; font-size: 14px;">Или впишите до 10 эмоджи:</label>
+        <input type="text" id="correct-emojis" placeholder="🍬, 🦄, 🧙‍♂️, ⭐, 🐸, 🔮, 🍄, 🔑" 
+               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px;">
+    </div>
+</div>
+
+<div class='magic-box' style="margin-top: 20px;">
+    <label>💀 ОШИБКИ</label>
+    <input type='file' multiple accept='image/*' onchange='handleErrors(this)'>
+    <div class="emoji-upload-group" style="margin-top: 15px;">
+        <label class="emoji-label" style="display: block; color: #ccc; margin-bottom: 5px; font-size: 14px;">Или впишите до 10 эмоджи:</label>
+        <input type="text" id="wrong-emojis" placeholder="💥, ❌, 👾, 👻, 🌪️, 🚫, ⚠️, 🧨" 
+               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px;">
+    </div>
 </div>
     <div class='magic-box'>
         <label>💭 ОБЛАЧКО МЫСЛЕЙ</label>
@@ -850,7 +861,56 @@
         document.execCommand('copy');
         alert('Магический код скопирован!');
     }
+// Функция запуска анимации эмоджи
+function spawnEmojiEffect(type) {
+    const inputId = type === 'correct' ? 'correct-emojis' : 'wrong-emojis';
+    const input = document.getElementById(inputId);
+    const emojis = (input.value || input.placeholder).split(',').map(e => e.trim());
+    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
+    const el = document.createElement('div');
+    el.innerText = randomEmoji;
+    el.className = `emoji-fly-${type}`;
+    el.style.cssText = `
+        position: fixed; left: 50%; bottom: 20%; 
+        font-size: 50px; z-index: 10000; pointer-events: none;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500); // Удаляем после анимации
+}
+
+// ВЫЗЫВАЙ ЭТИ ФУНКЦИИ ПРИ ПРОВЕРКЕ ОТВЕТА:
+
+function onCorrectAnswer() {
+    // 1. Сразу запускаем эмоджи
+    spawnEmojiEffect('correct');
+
+    // 2. Через 2 секунды лопаем пузыри
+    setTimeout(() => {
+        if (typeof popBubbles === "function") popBubbles(); 
+        console.log("Пузыри лопнули!");
+    }, 2000); 
+}
+
+function onWrongAnswer() {
+    // 1. Запускаем пламя (предположим, оно длится 2 секунды)
+    if (typeof startFlame === "function") startFlame();
+
+    // 2. Через 1 секунду после начала пламени вылетает эмоджи
+    // (так он вылетит ровно за 1 сек до угасания, если пламя горит 2 сек)
+    setTimeout(() => {
+        spawnEmojiEffect('wrong');
+    }, 1000);
+}
+    @keyframes emojiRise {
+    0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(-50%, -500px) scale(2); opacity: 0; }
+}
+
+.emoji-fly-correct, .emoji-fly-wrong {
+    animation: emojiRise 2.5s ease-out forwards;
+}
     // Инит
     window.onload = updateCode;
 </script>
