@@ -472,7 +472,7 @@
                     // Эффект вспышки огня в котле
                     let flash = document.getElementById('flash-effect');
                     if(flash) {
-                        flash.className = 'flash-effect fire'; // Включаем красный стиль
+                        flash.className = 'flash-effect fire'; // Включаем красный стиль (из нашего CSS)
                         gsap.fromTo(flash, { scale: 0, opacity: 1 }, { 
                             scale: 40, 
                             opacity: 0, 
@@ -482,16 +482,20 @@
                     }
 
                     // ВЫЛЕТ НЕГАТИВНЫХ ЭМОДЖИ
-                    // Берем строку из нашего нового поля в настройках
-                    let loseEmojisStr = document.getElementById('lose-emojis').value;
+                    // Скрипт тянет строку из поля, которое мы добавили в ПРИЗЫ И ЭМОДЖИ
+                    let loseEmojisInput = document.getElementById('lose-emojis');
+                    let loseEmojisStr = loseEmojisInput ? loseEmojisInput.value : "❌,💨,💀"; // Фоллбек на случай ошибки
+                    
                     if(typeof spawnParticles === 'function') {
                         spawnParticles(loseEmojisStr); 
                     }
 
-                    // Стандартная индикация (красная тень по краям)
+                    // Стандартная индикация (красная тень по краям экрана)
                     var gv = document.getElementById('gv');
-                    gv.style.boxShadow = "inset 0 0 100px red";
-                    setTimeout(() => gv.style.boxShadow = "none", 500);
+                    if(gv) {
+                        gv.style.boxShadow = "inset 0 0 100px red";
+                        setTimeout(() => gv.style.boxShadow = "none", 500);
+                    }
                     
                     // Штраф за ошибку
                     score -= 5;
