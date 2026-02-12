@@ -743,22 +743,32 @@
                 }
                 #spk { position: absolute; top: 15px; right: 15px; font-size: 30px; cursor: pointer; z-index: 100; filter: drop-shadow(0 0 5px white); }
 
-                /* BUTTONS - ENGLISH */
-                .game-btn {
-                    position: absolute; bottom: 20px; left: 20px;
-                    background: linear-gradient(to bottom, #4cd964, #28a745);
-                    border: 2px solid #fff;
-                    color: white;
-                    padding: 10px 25px;
-                    border-radius: 20px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    z-index: 50;
-                    box-shadow: 0 4px 0 #1e7e34;
-                }
-                .game-btn:active { transform: translateY(4px); box-shadow: none; }
-                #btn-reset { left: 140px; background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
+                /* BUTTONS - RIGHT CORNER (10mm) */
+.game-btn {
+    position: absolute; 
+    bottom: 10mm;      /* Отступ 10мм снизу */
+    right: 140px;      /* Сдвигаем первую кнопку (Check) влево от края, чтобы влезла вторая */
+    background: linear-gradient(to bottom, #4cd964, #28a745);
+    border: 2px solid #fff;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 50;
+    box-shadow: 0 4px 0 #1e7e34;
+}
+
+.game-btn:active { transform: translateY(4px); box-shadow: none; }
+
+/* Кнопка Restart прижимается в самый угол */
+#btn-reset { 
+    right: 10mm;       /* Отступ 10мм справа */
+    left: auto;        /* Сбрасываем старое значение left */
+    background: linear-gradient(to bottom, #a8a8a8, #666); 
+    box-shadow: 0 4px 0 #444; 
+}
 
                 /* FINISH SCREEN - MAGICAL UPDATE */
                 #fin {
