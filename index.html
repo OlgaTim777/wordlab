@@ -2,7 +2,7 @@
 <html lang='ru'>
 <head>
     <meta charset='UTF-8'>
-    <title>Magic Pot v4.1 - Sorcerer Edition</title>
+    <title>Magic Pot v4.5 - Sorcerer Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -127,22 +127,12 @@
 <body>
 
 <div id='editor-panel'>
-    <h2>Magic Generator 4.1</h2>
+    <h2>Magic Generator 4.5</h2>
     
     <div class='magic-box'>
         <label>🚀 КОД</label>
         <button class='btn-magic' onclick='copyCode()'>СКОПИРОВАТЬ КОД</button>
         <textarea id='code-output' readonly style="margin-top:10px;" placeholder="Код появится здесь..."></textarea>
-    </div>
-
-    <div class='magic-box'>
-        <label>🛡️ ЛОГОТИП</label>
-        <input type='file' accept="image/*" onchange='handleFile(this, "logo")'>
-        <input type='text' id='l-link' placeholder="Ссылка при клике (https://...)" oninput='updateCode()' style="margin-bottom:5px;">
-        <div class='grid-2'>
-            <input type='number' id='l-x' value='5' title="X %" placeholder="X %" oninput='updateCode()'>
-            <input type='number' id='l-y' value='5' title="Y %" placeholder="Y %" oninput='updateCode()'>
-        </div>
     </div>
 
     <div class='magic-box'>
@@ -161,6 +151,7 @@
             <input type='number' id='t-val' value='60' placeholder='Сек' oninput='updateCode()'>
             <input type='color' id='t-col' value='#ffffff' oninput='updateCode()'>
         </div>
+        <div style="font-size:10px; color:#aaa; margin-top:5px;">+1 балл за слово в слот, -1 за возврат, -5 за ошибку.</div>
     </div>
 
     <div class='magic-box'>
@@ -183,11 +174,6 @@
         <div class='grid-2'>
             <input type='number' id='p-x' value='50' title="Позиция X %" placeholder="X %" oninput='updateCode()'>
             <input type='number' id='p-y' value='65' title="Позиция Y %" placeholder="Y %" oninput='updateCode()'>
-        </div>
-        
-        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #5a3e85;">
-            <div style="font-size:10px; margin-bottom:5px;">☠️ Картинка при ошибке (из котла):</div>
-            <input type='file' accept="image/*" onchange='handleFile(this, "failItem")'>
         </div>
     </div>
 
@@ -229,24 +215,13 @@
     </div>
 
     <div class='magic-box'>
-    <label>🎁 ПРИЗЫ</label>
-    <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
-    <div class="emoji-upload-group" style="margin-top: 15px;">
-        <label class="emoji-label" style="display: block; color: #ccc; margin-bottom: 5px; font-size: 14px;">Или впишите до 10 эмоджи:</label>
-        <input type="text" id="correct-emojis" placeholder="🍬, 🦄, 🧙‍♂️, ⭐, 🐸, 🔮, 🍄, 🔑" 
-               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px;">
+        <label>🎁 ПРИЗЫ И ЭМОДЖИ</label>
+        <div style="font-size:10px; color:#aaa; margin-bottom:5px;">Картинки (до 10):</div>
+        <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
+        <div style="font-size:10px; color:#aaa; margin:5px 0;">Или впишите до 10 эмоджи:</div>
+        <input type='text' id='prize-emojis' value='🍬,🦄,🧙‍♂️,⭐,🐸,🔮,🍄,🗝️' placeholder="🍬,🦄,⭐..." oninput='updateCode()'>
     </div>
-</div>
 
-<div class='magic-box' style="margin-top: 20px;">
-    <label>💀 ОШИБКИ</label>
-    <input type='file' multiple accept='image/*' onchange='handleErrors(this)'>
-    <div class="emoji-upload-group" style="margin-top: 15px;">
-        <label class="emoji-label" style="display: block; color: #ccc; margin-bottom: 5px; font-size: 14px;">Или впишите до 10 эмоджи:</label>
-        <input type="text" id="wrong-emojis" placeholder="💥, ❌, 👾, 👻, 🌪️, 🚫, ⚠️, 🧨" 
-               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 16px;">
-    </div>
-</div>
     <div class='magic-box'>
         <label>💭 ОБЛАЧКО МЫСЛЕЙ</label>
         <div class='grid-2'>
@@ -270,13 +245,11 @@
     const assets = {
         bg: "https://i.imgur.com/UEU5VeO.jpeg",
         hero: "https://i.ibb.co/m5pXm6S/monster.png",
-        pot: "https://i.imgur.com/eZ1HWGL.png", 
+        pot: "https://i.imgur.com/eZ1HWGL.png", // Дефолт котла
         jar: "https://i.imgur.com/zn0Uxnh.png",
         abg: "",
         awin: "https://actions.google.com/sounds/v1/cartoon/clime_up_the_ladder.ogg",
         afail: "https://actions.google.com/sounds/v1/cartoon/boing.ogg",
-        logo: "", // NEW
-        failItem: "https://cdn-icons-png.flaticon.com/512/179/179657.png", // Default sad face
         prizes: []
     };
 
@@ -294,7 +267,7 @@
     function handlePrizes(input) {
         assets.prizes = [];
         if (input.files) {
-            Array.from(input.files).forEach(file => {
+            Array.from(input.files).slice(0, 10).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     assets.prizes.push(e.target.result);
@@ -306,6 +279,10 @@
     }
 
     function updateCode() {
+        // Парсим эмоджи, удаляем пробелы
+        let emojiRaw = document.getElementById('prize-emojis').value;
+        let emojiArr = emojiRaw.split(/[,; ]+/).filter(e => e.trim() !== "");
+
         const config = {
             m: document.getElementById('m-list').value,
             timer: {
@@ -336,12 +313,8 @@
                 sz: document.getElementById('c-sz').value,
                 fnt: document.getElementById('c-font').value
             },
-            logo: {
-                x: document.getElementById('l-x').value,
-                y: document.getElementById('l-y').value,
-                link: document.getElementById('l-link').value
-            },
-            assets: assets
+            assets: assets,
+            emojis: emojiArr
         };
 
         const jsCode = `
@@ -349,6 +322,7 @@
             var sentences = c.m.split("\\n").filter(s => s.trim()).sort(() => Math.random() - 0.5);
             var step = 0;
             var score = 0;
+            var collectedPrizes = [];
             
             // Таймер
             var timeVal = c.timer.mode === 'down' ? parseInt(c.timer.val) : 0;
@@ -356,6 +330,15 @@
             
             var audBG = c.assets.abg ? new Audio(c.assets.abg) : null;
             if(audBG) audBG.loop = true;
+
+            var quotes = [
+                "You are magical!", "Great job, Wizard!", "Fantastic spell!", 
+                "Keep shining!", "Amazing work!", "You are a star!", 
+                "Pure Magic!", "Excellent!", "Wonderful!", "Brilliant!",
+                "Super Power!", "Way to go!", "Believe in magic!",
+                "Spectacular!", "Well done!", "Magical Mind!",
+                "Awesome!", "Great memory!", "You did it!", "Champion!"
+            ];
 
             function startTimer() {
                 if(timerInt) return;
@@ -394,9 +377,6 @@
                 cz.innerHTML = '';
                 var bui = document.getElementById('bui');
                 bui.innerHTML = '';
-                // Удаляем старые эффекты если есть
-                var oldFire = document.querySelector('.fire-fx');
-                if(oldFire) oldFire.remove();
 
                 // Создание слотов в котле
                 var words = currentText.split(/\\s+/);
@@ -469,13 +449,13 @@
                     // WIN
                     if(c.assets.awin) new Audio(c.assets.awin).play();
                     
-                    // Запуск пузырей (УВЕЛИЧЕНО В 2 РАЗА)
+                    // Запуск пузырей
                     spawnBubbles();
                     
-                    // Приз вылетает через 2 секунды после пузырей
+                    // Приз вылетает через 2 секунды после пузырей (всего пузыри 4 сек, приз за 2 сек до конца)
                     setTimeout(spawnPrize, 2000);
 
-                    // Следующий уровень
+                    // Следующий уровень через 4 сек (когда кончатся пузыри)
                     setTimeout(() => {
                         step++;
                         initLevel();
@@ -483,90 +463,84 @@
                 } else {
                     // FAIL
                     if(c.assets.afail) new Audio(c.assets.afail).play();
+                    var gv = document.getElementById('gv');
+                    gv.style.boxShadow = "inset 0 0 100px red";
+                    setTimeout(() => gv.style.boxShadow = "none", 500);
                     
-                    // Эффект огня
-                    showFire();
-
                     // Штраф за ошибку
                     score -= 5;
                     updateScore();
                 }
             }
 
-            function showFire() {
-                var cz = document.getElementById('cz');
-                var f = document.createElement('div');
-                f.className = 'fire-fx';
-                cz.appendChild(f);
-                
-                // Удаляем огонь через 2.5 сек (вспышка и угасание)
-                setTimeout(() => f.remove(), 2500);
-
-                // Спавн негативных эмоджи за 1 сек до угасания (огонь 2.5с, значит спавн на 1.5с)
-                if(c.assets.failItem) {
-                   setTimeout(spawnFailItems, 1500);
-                }
-            }
-
-            function spawnFailItems() {
-                 var gv = document.getElementById("gv");
-                 // Вылетают 10 штук
-                 for(let i=0; i<10; i++) {
-                    setTimeout(() => {
-                        var b = document.createElement('div');
-                        b.className = 'fail-item';
-                        b.style.backgroundImage = "url('"+c.assets.failItem+"')";
-                        
-                        // Старт от котла
-                        b.style.left = c.pot.x + '%';
-                        b.style.top = c.pot.y + '%';
-                        
-                        // Разлет
-                        var rX = (Math.random() - 0.5) * 200;
-                        var rY = - (Math.random() * 200 + 100);
-                        
-                        b.style.setProperty('--tx', rX + 'px');
-                        b.style.setProperty('--ty', rY + 'px');
-
-                        gv.appendChild(b);
-                        setTimeout(() => b.remove(), 1000);
-                    }, i * 50);
-                 }
-            }
-
             function spawnBubbles() {
                 var pot = document.getElementById('cz');
-                // Спавн 80 пузырей (УВЕЛИЧЕНО)
+                // Спавн 80 пузырей (увеличено)
                 for(let i=0; i<80; i++) {
                     setTimeout(() => {
                         var b = document.createElement('div');
                         b.className = 'bubble';
                         
-                        var s = Math.random() * 20 + 10;
+                        // Случайный размер
+                        var s = Math.random() * 25 + 10;
                         b.style.width = s + 'px';
                         b.style.height = s + 'px';
                         
-                        var rX = (Math.random() - 0.5) * 100;
+                        // Случайный сдвиг вылета
+                        var rX = (Math.random() - 0.5) * 120;
                         b.style.left = 'calc(50% + ' + rX + 'px)';
                         
-                        var cols = ['#9b59b6', '#2ecc71', '#f1c40f', '#e74c3c'];
+                        // Случайный цвет и прозрачность
+                        var cols = ['rgba(155, 89, 182, 0.8)', 'rgba(46, 204, 113, 0.8)', 'rgba(241, 196, 15, 0.8)', 'rgba(52, 152, 219, 0.8)'];
                         b.style.background = cols[Math.floor(Math.random()*cols.length)];
                         
                         pot.appendChild(b);
-                        setTimeout(() => b.remove(), 2000);
-                    }, i * 20); // Чуть быстрее частота спавна
+                        
+                        // Удалить
+                        setTimeout(() => b.remove(), 2500);
+                    }, i * 20);
                 }
             }
 
             function spawnPrize() {
-                if(!c.assets.prizes.length) return;
+                // Определяем тип приза (картинка или эмоджи)
+                var prizeContent = "";
+                var isImg = false;
+
+                if(c.assets.prizes.length > 0) {
+                     // Приоритет картинкам
+                     var rnd = c.assets.prizes[Math.floor(Math.random()*c.assets.prizes.length)];
+                     prizeContent = rnd;
+                     isImg = true;
+                } else if(c.emojis && c.emojis.length > 0) {
+                     // Фолбек на эмоджи
+                     var rnd = c.emojis[Math.floor(Math.random()*c.emojis.length)];
+                     prizeContent = rnd;
+                     isImg = false;
+                } else {
+                     return; // Нет призов
+                }
+
+                // Запоминаем приз
+                collectedPrizes.push({content: prizeContent, type: isImg ? 'img' : 'emoji'});
+
                 var p = document.createElement("div"); 
                 p.className="prize";
-                p.style.backgroundImage = "url('"+c.assets.prizes[Math.floor(Math.random()*c.assets.prizes.length)]+"')";
                 
+                if(isImg) {
+                    p.style.backgroundImage = "url('"+prizeContent+"')";
+                } else {
+                    p.innerText = prizeContent;
+                    p.style.display = "flex";
+                    p.style.alignItems = "center";
+                    p.style.justifyContent = "center";
+                    p.style.fontSize = "80px";
+                }
+                
+                // Вставляем приз в основной контейнер, но позиционируем над котлом
                 var gv = document.getElementById("gv");
                 p.style.left = c.pot.x + '%';
-                p.style.bottom = (100 - parseInt(c.pot.y)) + 10 + '%'; 
+                p.style.bottom = (100 - parseInt(c.pot.y)) + 15 + '%'; 
                 
                 gv.appendChild(p);
                 setTimeout(()=>p.remove(), 2000);
@@ -576,6 +550,25 @@
                 clearInterval(timerInt);
                 document.getElementById('fin').style.display = 'flex';
                 document.getElementById('f-score').innerText = score;
+                
+                // Рандомный слоган
+                var rndQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                document.getElementById('f-msg').innerText = rndQuote;
+
+                // Галерея призов
+                var gallery = document.getElementById('prize-gallery');
+                gallery.innerHTML = "";
+                collectedPrizes.forEach(item => {
+                    var el = document.createElement("div");
+                    if(item.type === 'img') {
+                        el.style.backgroundImage = "url('"+item.content+"')";
+                        el.className = "gallery-item item-img";
+                    } else {
+                        el.innerText = item.content;
+                        el.className = "gallery-item item-emoji";
+                    }
+                    gallery.appendChild(el);
+                });
             }
 
             function toggleHint() {
@@ -619,46 +612,25 @@
                 }
                 @keyframes float { 0%,100%{transform:translate(-50%,-50%);} 50%{transform:translate(-50%,calc(-50% - 15px));} }
 
-                /* LOGO */
-                #logo {
-                    position: absolute;
-                    left: ${config.logo.x}%;
-                    top: ${config.logo.y}%;
-                    width: 150px;
-                    height: auto;
-                    z-index: 150;
-                    cursor: ${config.logo.link ? 'pointer' : 'default'};
-                }
-
-                /* COMIC THOUGHT CLOUD */
+                /* THOUGHT CLOUD */
                 #hc {
-                    position: absolute; bottom: 105%; left: 50%; transform: translateX(-50%);
-                    background: #fff;
-                    border: 3px solid #000;
-                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                    padding: 25px 30px;
-                    min-width: 180px;
+                    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+                    background: rgba(230, 240, 255, 0.9);
+                    border: 2px solid #fff;
+                    border-radius: 20px;
+                    padding: 15px;
+                    min-width: 150px;
                     text-align: center;
                     display: none;
                     color: ${config.cloud.col};
                     font-size: ${config.cloud.sz}px;
-                    box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                     pointer-events: none;
                     white-space: nowrap;
-                    font-weight: bold;
-                    z-index: 200;
                 }
-                /* Хвостик облака */
-                #hc::after { 
-                    content:''; position:absolute; top:95%; left:20%; 
-                    width: 20px; height: 20px;
-                    background: #fff; border: 3px solid #000;
-                    border-top: none; border-right: none;
-                    border-radius: 0 0 0 100%;
-                    transform: rotate(-10deg);
-                }
+                #hc::after { content:''; position:absolute; top:100%; left:50%; margin-left:-10px; border:10px solid transparent; border-top-color:rgba(230, 240, 255, 0.9); }
 
-                /* POT ZONE */
+                /* POT ZONE (Container for slots) */
                 #cz {
                     position: absolute;
                     width: ${config.pot.w}%;
@@ -683,7 +655,7 @@
                     z-index: 7;
                 }
 
-                /* JARS */
+                /* JARS (CARDS) */
                 #bui { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
                 .card {
                     pointer-events: auto;
@@ -703,53 +675,24 @@
                 }
                 .card:hover { transform: scale(1.1); }
 
-                /* BUBBLES */
+                /* BUBBLES - MAGICAL UPDATE */
                 .bubble {
                     position: absolute;
-                    bottom: 50%; left: 50%;
+                    top: 10%; /* Start from top of container (top edge of pot) */
+                    left: 50%;
                     border-radius: 50%;
-                    box-shadow: inset 0 0 5px rgba(255,255,255,0.8);
+                    box-shadow: inset 0 0 10px rgba(255,255,255,0.9), 0 0 10px rgba(255,255,255,0.5);
                     opacity: 0;
-                    animation: bubbleRise 2s ease-out forwards;
+                    animation: bubbleRise 2.5s ease-out forwards;
                     z-index: 100;
-                    border: 1px solid rgba(255,255,255,0.4);
+                    border: 1px solid rgba(255,255,255,0.6);
                 }
                 @keyframes bubbleRise {
-                    0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
-                    50% { transform: translate(calc(-50% + 10px), -150px) scale(1); opacity: 0.8; }
-                    100% { transform: translate(calc(-50% - 10px), -300px) scale(1.2); opacity: 0; }
-                }
-
-                /* FIRE EFFECT */
-                .fire-fx {
-                    position: absolute;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    border-radius: 50%;
-                    background: radial-gradient(circle, rgba(255,200,0,0.8) 0%, rgba(255,69,0,0.6) 40%, transparent 70%);
-                    box-shadow: 0 0 60px 30px rgba(255,69,0,0.5);
-                    z-index: 4;
-                    animation: burn 2.5s ease-out forwards;
-                    pointer-events: none;
-                }
-                @keyframes burn {
-                    0% { opacity: 0; transform: scale(0.5); }
-                    10% { opacity: 1; transform: scale(1.1); }
-                    20% { opacity: 1; transform: scale(0.9); box-shadow: 0 0 80px 40px rgba(255,0,0,0.7); }
-                    80% { opacity: 1; transform: scale(1); }
-                    100% { opacity: 0; transform: scale(1.2); }
-                }
-
-                /* FAIL ITEMS */
-                .fail-item {
-                    position: absolute;
-                    width: 40px; height: 40px;
-                    background-size: contain; background-repeat: no-repeat;
-                    z-index: 200;
-                    animation: failFly 1s ease-out forwards;
-                }
-                @keyframes failFly {
-                    0% { opacity:1; transform: translate(-50%, -50%) scale(0.5); }
-                    100% { opacity:0; transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(720deg); }
+                    0% { transform: translate(-50%, 0) scale(0.2); opacity: 0; }
+                    20% { opacity: 1; }
+                    50% { transform: translate(calc(-50% + 20px), -150px) scale(1.1); }
+                    75% { transform: translate(calc(-50% - 20px), -250px) scale(1); }
+                    100% { transform: translate(-50%, -400px) scale(1.5); opacity: 0; }
                 }
 
                 /* UI ELEMENTS */
@@ -767,16 +710,9 @@
                 }
                 #spk { position: absolute; top: 15px; right: 15px; font-size: 30px; cursor: pointer; z-index: 100; filter: drop-shadow(0 0 5px white); }
 
-                /* BUTTONS CONTAINER (BOTTOM RIGHT) */
-                #btn-container {
-                    position: absolute;
-                    bottom: 38px; /* ~10mm */
-                    right: 38px;  /* ~10mm */
-                    display: flex;
-                    gap: 15px;
-                    z-index: 50;
-                }
+                /* BUTTONS - ENGLISH */
                 .game-btn {
+                    position: absolute; bottom: 20px; left: 20px;
                     background: linear-gradient(to bottom, #4cd964, #28a745);
                     border: 2px solid #fff;
                     color: white;
@@ -785,12 +721,13 @@
                     font-size: 16px;
                     font-weight: bold;
                     cursor: pointer;
+                    z-index: 50;
                     box-shadow: 0 4px 0 #1e7e34;
                 }
                 .game-btn:active { transform: translateY(4px); box-shadow: none; }
-                #btn-reset { background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
+                #btn-reset { left: 140px; background: linear-gradient(to bottom, #a8a8a8, #666); box-shadow: 0 4px 0 #444; }
 
-                /* FINISH SCREEN */
+                /* FINISH SCREEN - MAGICAL UPDATE */
                 #fin {
                     position: absolute; inset: 0;
                     background: rgba(20, 10, 40, 0.95);
@@ -801,9 +738,29 @@
                     z-index: 1000;
                     color: #ffd700;
                     text-align: center;
+                    background-image: radial-gradient(circle, rgba(118,74,188,0.2) 0%, rgba(0,0,0,0) 70%);
                 }
-                #fin h1 { font-family: serif; font-size: 4em; margin: 0; text-shadow: 0 0 20px #d4af37; }
-                #fin p { font-size: 1.5em; color: white; }
+                /* Magical Decor Elements via CSS */
+                #fin::before { content: '✨'; position: absolute; top: 10%; left: 10%; font-size: 40px; animation: pulse 2s infinite; }
+                #fin::after { content: '🧙‍♂️'; position: absolute; bottom: 10%; right: 10%; font-size: 60px; animation: bounce 3s infinite; }
+                @keyframes pulse { 0%,100%{opacity:0.5; transform:scale(1);} 50%{opacity:1; transform:scale(1.2);} }
+                @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-20px);} }
+
+                #fin h1 { font-family: serif; font-size: 4em; margin: 0; text-shadow: 0 0 20px #d4af37, 0 0 10px #764abc; }
+                #fin p { font-size: 1.5em; color: white; margin: 10px 0; }
+                #f-msg { font-style: italic; color: #a29bfe; font-size: 1.8em; margin-bottom: 20px; text-shadow: 0 0 5px #764abc; }
+
+                /* PRIZE GALLERY */
+                #prize-gallery {
+                    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+                    max-width: 80%;
+                    background: rgba(255,255,255,0.1);
+                    padding: 15px; border-radius: 15px;
+                    border: 1px solid rgba(212, 175, 55, 0.3);
+                }
+                .gallery-item { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #d4af37; background-color: rgba(0,0,0,0.5); }
+                .item-img { background-size: cover; background-position: center; }
+                .item-emoji { display: flex; align-items: center; justify-content: center; font-size: 35px; border: none; background: none; }
                 
                 .prize {
                     position: absolute;
@@ -812,6 +769,7 @@
                     transform: translate(-50%, 0);
                     animation: popUp 2s ease-out forwards;
                     z-index: 200;
+                    filter: drop-shadow(0 0 20px gold);
                 }
                 @keyframes popUp { 
                     0% { transform: translate(-50%, 50px) scale(0); opacity: 0; }
@@ -829,22 +787,20 @@
                     </div>
                     <div id="spk" onclick="speak()">🔊</div>
                     
-                    ${config.assets.logo ? `<a href="${config.logo.link}" target="_blank"><img id="logo" src="${config.assets.logo}"></a>` : ''}
-
                     <div id="hr" onclick="toggleHint()"><div id="hc"></div></div>
                     
                     <div id="cz"></div>
                     <div id="bui"></div>
                     
-                    <div id="btn-container">
-                        <button class="game-btn" id="btn-reset" onclick="initLevel()">СБРОС</button>
-                        <button class="game-btn" onclick="check()">ПРОВЕРИТЬ</button>
-                    </div>
+                    <button class="game-btn" onclick="check()">CHECK</button>
+                    <button class="game-btn" id="btn-reset" onclick="initLevel()">RESET</button>
                     
                     <div id="fin">
                         <h1>Magic Complete!</h1>
-                        <p>Твой результат: <span id="f-score">0</span></p>
-                        <button class="game-btn" style="margin-top:20px;" onclick="location.reload()">ИГРАТЬ СНОВА</button>
+                        <p>Score: <span id="f-score">0</span></p>
+                        <div id="f-msg"></div>
+                        <div id="prize-gallery"></div>
+                        <button class="game-btn" style="position:static; margin-top:20px;" onclick="location.reload()">PLAY AGAIN</button>
                     </div>
                 </div>
                 <script>${jsCode}<\/script>
@@ -861,25 +817,8 @@
         document.execCommand('copy');
         alert('Магический код скопирован!');
     }
-// Функция запуска анимации эмоджи
-function spawnEmojiEffect(type) {
-    const inputId = type === 'correct' ? 'correct-emojis' : 'wrong-emojis';
-    const input = document.getElementById(inputId);
-    const emojis = (input.value || input.placeholder).split(',').map(e => e.trim());
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-    const el = document.createElement('div');
-    el.innerText = randomEmoji;
-    el.className = `emoji-fly-${type}`;
-    el.style.cssText = `
-        position: fixed; left: 50%; bottom: 20%; 
-        font-size: 50px; z-index: 10000; pointer-events: none;
-    `;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2500); // Удаляем после анимации
-}
-
-   // Инит
+    // Инит
     window.onload = updateCode;
 </script>
 </body>
