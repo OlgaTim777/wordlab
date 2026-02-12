@@ -215,12 +215,17 @@
     </div>
 
     <div class='magic-box'>
-        <label>🎁 ПРИЗЫ И ЭМОДЖИ</label>
-        <div style="font-size:10px; color:#aaa; margin-bottom:5px;">Картинки (до 10):</div>
-        <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
-        <div style="font-size:10px; color:#aaa; margin:5px 0;">Или впишите до 10 эмоджи:</div>
-        <input type='text' id='prize-emojis' value='🍬,🦄,🧙‍♂️,⭐,🐸,🔮,🍄,🗝️' placeholder="🍬,🦄,⭐..." oninput='updateCode()'>
-    </div>
+    <label>🎁 ПРИЗЫ И ЭМОДЖИ</label>
+    
+    <div style="font-size:10px; color:#aaa; margin-bottom:5px;">Картинки призов (до 10):</div>
+    <input type='file' multiple accept='image/*' onchange='handlePrizes(this)'>
+    
+    <div style="font-size:10px; color:#aaa; margin:10px 0 5px;">🎉 Эмоджи ПОБЕДЫ (через запятую):</div>
+    <input type='text' id='prize-emojis' value='🍬,🦄,🧙‍♂️,⭐,🔮' placeholder="🍬,🦄,⭐..." oninput='updateCode()'>
+
+    <div style="font-size:10px; color:#aaa; margin:10px 0 5px;">🔥 Эмоджи ОШИБКИ (через запятую):</div>
+    <input type='text' id='lose-emojis' value='🕷️,💀,🕸️,💨,💩' placeholder="🕷️,💀,🕸️..." oninput='updateCode()'>
+</div>
 
     <div class='magic-box'>
         <label>💭 ОБЛАЧКО МЫСЛЕЙ</label>
