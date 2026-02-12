@@ -22,6 +22,18 @@
             height: 100vh; 
             overflow: hidden; 
         }
+        /* МАГИЧЕСКИЙ ОГОНЬ ПРИ ОШИБКЕ */
+        .flash-effect.fire {
+            background: radial-gradient(circle, 
+                #ffffff 0%, 
+                #ffff00 25%, 
+                #ff8c00 50%, 
+                #ff0000 80%, 
+                transparent 100%);
+            box-shadow: 0 0 50px 20px #ff4500, 0 0 100px 40px rgba(255, 0, 0, 0.4);
+            filter: blur(1px);
+            border: none;
+        }
         
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
@@ -893,6 +905,43 @@
 
     // Инит
     window.onload = updateCode;
+/* ФУНКЦИЯ ДЛЯ ВЫЛЕТА НЕГАТИВНЫХ ЭМОДЖИ */
+function spawnParticles(emojiStr) {
+    const emojis = emojiStr.split(',').map(e => e.trim());
+    const cauldron = document.getElementById('cauldron');
+    if (!cauldron) return;
+
+    const rect = cauldron.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // Создаем 12 случайных эмоджи из списка
+    for (let i = 0; i < 12; i++) {
+        const p = document.createElement('div');
+        p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        p.style.cssText = `
+            position: fixed;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            font-size: 40px;
+            z-index: 2000;
+            pointer-events: none;
+            user-select: none;
+        `;
+        document.body.appendChild(p);
+
+        // Анимация разлета (GSAP)
+        gsap.to(p, {
+            x: (Math.random() - 0.5) * 600, // Влево-вправо
+            y: (Math.random() - 0.8) * 500, // Вверх и вниз
+            rotation: Math.random() * 720,  // Кручение
+            opacity: 0,
+            duration: 1.5,
+            ease: "power2.out",
+            onComplete: () => p.remove()    // Удаляем из памяти после анимации
+        });
+    }
+}
 </script>
 </body>
 </html>
