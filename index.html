@@ -296,43 +296,48 @@
     }
 
     function updateCode() {
-        // Парсим эмоджи, удаляем пробелы
-        let emojiRaw = document.getElementById('prize-emojis').value;
-        let emojiArr = emojiRaw.split(/[,; ]+/).filter(e => e.trim() !== "");
+    // 1. Получаем эмоджи победы
+    let emojiRaw = document.getElementById('prize-emojis').value;
+    let emojiArr = emojiRaw.split(/[,; ]+/).filter(e => e.trim() !== "");
 
-        const config = {
-            m: document.getElementById('m-list').value,
-            timer: {
-                mode: document.getElementById('t-mode').checked ? 'down' : 'up',
-                val: document.getElementById('t-val').value,
-                col: document.getElementById('t-col').value
-            },
-            hero: {
-                s: document.getElementById('h-s').value,
-                x: document.getElementById('h-x').value,
-                y: document.getElementById('h-y').value
-            },
-            pot: {
-                w: document.getElementById('p-w').value,
-                h: document.getElementById('p-h').value,
-                x: document.getElementById('p-x').value,
-                y: document.getElementById('p-y').value
-            },
-            jar: {
-                col: document.getElementById('j-col').value,
-                sz: document.getElementById('j-sz').value,
-                off: document.getElementById('j-off').value,
-                bx: document.getElementById('j-bx').value,
-                by: document.getElementById('j-by').value
-            },
-            cloud: {
-                col: document.getElementById('c-col').value,
-                sz: document.getElementById('c-sz').value,
-                fnt: document.getElementById('c-font').value
-            },
-            assets: assets,
-            emojis: emojiArr
-        };
+    // 2. Получаем эмоджи ошибки (берем как строку через запятую)
+    let loseEmojisVal = document.getElementById('lose-emojis').value;
+
+    const config = {
+        m: document.getElementById('m-list').value,
+        timer: {
+            mode: document.getElementById('t-mode').checked ? 'down' : 'up',
+            val: document.getElementById('t-val').value,
+            col: document.getElementById('t-col').value
+        },
+        hero: {
+            s: document.getElementById('h-s').value,
+            x: document.getElementById('h-x').value,
+            y: document.getElementById('h-y').value
+        },
+        pot: {
+            w: document.getElementById('p-w').value,
+            h: document.getElementById('p-h').value,
+            x: document.getElementById('p-x').value,
+            y: document.getElementById('p-y').value
+        },
+        jar: {
+            col: document.getElementById('j-col').value,
+            sz: document.getElementById('j-sz').value,
+            off: document.getElementById('j-off').value,
+            bx: document.getElementById('j-bx').value,
+            by: document.getElementById('j-by').value
+        },
+        cloud: {
+            col: document.getElementById('c-col').value,
+            sz: document.getElementById('c-sz').value,
+            fnt: document.getElementById('c-font').value
+        },
+        assets: assets,
+        emojis: emojiArr,
+        // Передаем именно строку, чтобы функция spawnParticles могла её разделить
+        loseEmojis: loseEmojisVal || "🕷️,💀,🕸️" 
+    };
 
         const jsCode = `
             var c = ${JSON.stringify(config)};
