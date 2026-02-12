@@ -612,23 +612,56 @@
                 }
                 @keyframes float { 0%,100%{transform:translate(-50%,-50%);} 50%{transform:translate(-50%,calc(-50% - 15px));} }
 
-                /* THOUGHT CLOUD */
-                #hc {
-                    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-                    background: rgba(230, 240, 255, 0.9);
-                    border: 2px solid #fff;
-                    border-radius: 20px;
-                    padding: 15px;
-                    min-width: 150px;
-                    text-align: center;
-                    display: none;
-                    color: ${config.cloud.col};
-                    font-size: ${config.cloud.sz}px;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                    pointer-events: none;
-                    white-space: nowrap;
-                }
-                #hc::after { content:''; position:absolute; top:100%; left:50%; margin-left:-10px; border:10px solid transparent; border-top-color:rgba(230, 240, 255, 0.9); }
+                /* ОСНОВНОЕ ТЕЛО ОБЛАКА */
+#hc {
+    position: absolute; 
+    bottom: 110%; /* Чуть выше, чтобы хватило места для пузырьков */
+    left: 50%; 
+    transform: translateX(-50%);
+    background: #fff; /* Для комиксов лучше чистый белый */
+    border-radius: 50%; /* Делаем основу овальной */
+    padding: 25px 35px;
+    min-width: 120px;
+    text-align: center;
+    display: none;
+    color: ${config.cloud.col};
+    font-size: ${config.cloud.sz}px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+}
+
+/* ЛЕВАЯ ВЫПУКЛОСТЬ */
+#hc::before {
+    content: '';
+    position: absolute;
+    background: inherit;
+    width: 60%; 
+    height: 80%;
+    top: -20%; 
+    left: 10%;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+/* ПРАВАЯ ВЫПУКЛОСТЬ */
+#hc::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    width: 50%; 
+    height: 70%;
+    bottom: -15%; 
+    right: 15%;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+/* ХВОСТИК ИЗ ПУЗЫРЬКОВ (ВМЕСТО ТРЕУГОЛЬНИКА) */
+/* В HTML внутри #hc нужно добавить <span></span> для этого эффекта */
+/* Либо используем простую замену треугольника на круг в ::after, 
+   но для идеала лучше структура как в коде выше */
 
                 /* POT ZONE (Container for slots) */
                 #cz {
