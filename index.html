@@ -458,67 +458,90 @@
                 updateScore();
             }
 
-            function check() {
-                var target = sentences[step].split(/\\s+/);
-                var ok = true;
-                target.forEach((t, i) => {
-                    var s = document.getElementById('s-'+i);
-                    var w = s.firstChild ? s.firstChild.innerText : "";
-                    if(w !== t) ok = false;
-                });
+           function check() {
+        var target = sentences[step].split(/\s+/);
+        var ok = true;
+        target.forEach((t, i) => {
+            var s = document.getElementById('s-'+i);
+            var w = s.firstChild ? s.firstChild.innerText : "";
+            if(w !== t) ok = false;
+        });
 
-                if(ok) {
-                    // WIN
-                    if(c.assets.awin) new Audio(c.assets.awin).play();
-                    
-                    // Запуск пузырей
-                    spawnBubbles();
-                    
-                    // Приз вылетает через 2 секунды после пузырей (всего пузыри 4 сек, приз за 2 сек до конца)
-                    setTimeout(spawnPrize, 2000);
-
-                    // Следующий уровень через 4 сек (когда кончатся пузыри)
-                    setTimeout(() => {
-                        step++;
-                        initLevel();
-                    }, 4000);
-                } else {
-                    // FAIL
-                    if(c.assets.afail) new Audio(c.assets.afail).play();
-                    
-                    // Эффект вспышки огня в котле
-                    let flash = document.getElementById('flash-effect');
-                    if(flash) {
-                        flash.className = 'flash-effect fire'; // Включаем красный стиль (из нашего CSS)
-                        gsap.fromTo(flash, { scale: 0, opacity: 1 }, { 
-                            scale: 40, 
-                            opacity: 0, 
-                            duration: 0.6, 
-                            ease: "power2.out" 
-                        });
-                    }
-
-                    // ВЫЛЕТ НЕГАТИВНЫХ ЭМОДЖИ
-                    // Скрипт тянет строку из поля, которое мы добавили в ПРИЗЫ И ЭМОДЖИ
-                    let loseEmojisInput = document.getElementById('lose-emojis');
-                    let loseEmojisStr = loseEmojisInput ? loseEmojisInput.value : "❌,💨,💀"; // Фоллбек на случай ошибки
-                    
-                    if(typeof spawnParticles === 'function') {
-                        spawnParticles(loseEmojisStr); 
-                    }
-
-                    // Стандартная индикация (красная тень по краям экрана)
-                    var gv = document.getElementById('gv');
-                    if(gv) {
-                        gv.style.boxShadow = "inset 0 0 100px red";
-                        setTimeout(() => gv.style.boxShadow = "none", 500);
-                    }
-                    
-                    // Штраф за ошибку
-                    score -= 5;
-                    updateScore();
-                }
+        if(ok) {
+            // ПОБЕДА
+            if(c.assets.awin) new Audio(c.assets.awin).play();
+            spawnBubbles();
+            setTimeout(spawnPrize, 2000);
+            setTimeout(() => {
+                step++;
+                initLevel();
+            }, 4000);
+        } else {
+            // ОШИБКА
+            if(c.assets.afail) new Audio(c.assets.afail).play();
+            
+            // Мультяшная вспышка
+            let flash = document.getElementById('flash-effect');
+            if(flash) {
+                flash.className = 'flash-effect fire';
+                gsap.fromTo(flash, 
+                    { scale: 0.1, opacity: 1, xPercent: -50, yPercent: -50 }, 
+                    { scale: 15, opacity: 0, duration: 0.5, ease: "expo.out" }
+                );
             }
+
+            // Вылет эмоджи
+            let loseEmojisStr = (typeof c !== 'undefined' && c.loseEmojis) ? c.loseEmojis : "❌,💨,💀";
+            spawnParticles(loseEmojisStr);
+
+            // Индикация на экране
+            var gv = document.getElementById('gv');
+            if(gv) {
+                gv.style.boxShadow = "inset 0 0 100px red";
+                setTimeout(() => gv.style.boxShadow = "none", 500);
+            }
+            
+            score -= 5;
+            updateScore();
+        }
+    }
+
+    function spawnParticles(emojiStr) {
+        const emojis = emojiStr.split(/[,; ]+/).filter(e => e.trim() !== "");
+        const cauldron = document.getElementById('cauldron');
+        if (!cauldron) return;
+
+        const rect = cauldron.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 15; i++) {
+            const p = document.createElement('div');
+            p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            p.style.cssText = `
+                position: fixed;
+                left: ${centerX}px;
+                top: ${centerY}px;
+                font-size: 40px;
+                z-index: 2000;
+                pointer-events: none;
+                user-select: none;
+                transform: translate(-50%, -50%);
+            `;
+            document.body.appendChild(p);
+
+            gsap.to(p, {
+                x: (Math.random() - 0.5) * 500,
+                y: (Math.random() - 0.5) * 500 - 100,
+                rotation: Math.random() * 720,
+                opacity: 0,
+                scale: 0.5,
+                duration: 1 + Math.random() * 0.5,
+                ease: "expo.out",
+                onComplete: () => p.remove()
+            });
+        }
+    }
 
             function spawnBubbles() {
                 var pot = document.getElementById('cz');
