@@ -442,62 +442,78 @@
             }
 
             function check() {
-                var target = sentences[step].split(/\\s+/);
-                var ok = true;
-                target.forEach((t, i) => {
-                    var s = document.getElementById('s-'+i);
-                    var w = s.firstChild ? s.firstChild.innerText : "";
-                    if(w !== t) ok = false;
-                });
+    // 1. Считываем цель (задание)
+    var target = sentences[step].split(/\s+/);
+    var ok = true;
 
-                if(ok) {
-                    // WIN
-                    if(c.assets.awin) new Audio(c.assets.awin).play();
-                    
-                    // Запуск пузырей
-                    spawnBubbles();
-                    
-                    // Приз вылетает через 2 секунды после пузырей (всего пузыри 4 сек, приз за 2 сек до конца)
-                    setTimeout(spawnPrize, 2000);
+    // 2. Проверяем правильность сборки
+    target.forEach((t, i) => {
+        var s = document.getElementById('s-' + i);
+        var w = s.firstChild ? s.firstChild.innerText : "";
+        if (w !== t) ok = false;
+    });
 
-                    // Следующий уровень через 4 сек (когда кончатся пузыри)
-                    setTimeout(() => {
-                        step++;
-                        initLevel();
-                    }, 4000);
-                } else {
-                    // FAIL
-                    if(c.assets.afail) new Audio(c.assets.afail).play();
-                    
-                    // Эффект вспышки огня в котле
-                    let flash = document.getElementById('flash-effect');
-                    if(flash) {
-                        flash.className = 'flash-effect fire'; // Включаем красный стиль
-                        gsap.fromTo(flash, { scale: 0, opacity: 1 }, { 
-                            scale: 40, 
-                            opacity: 0, 
-                            duration: 0.6, 
-                            ease: "power2.out" 
-                        });
-                    }
+    // Получаем элемент вспышки
+    var flash = document.getElementById('flash-effect');
 
-                    // ВЫЛЕТ НЕГАТИВНЫХ ЭМОДЖИ
-                    // Берем строку из нашего нового поля в настройках
-                    let loseEmojisStr = document.getElementById('lose-emojis').value;
-                    if(typeof spawnParticles === 'function') {
-                        spawnParticles(loseEmojisStr); 
-                    }
+    if (ok) {
+        // --- ПОБЕДА (WIN) ---
+        if (c.assets.awin) new Audio(c.assets.awin).play();
 
-                    // Стандартная индикация (красная тень по краям)
-                    var gv = document.getElementById('gv');
-                    gv.style.boxShadow = "inset 0 0 100px red";
-                    setTimeout(() => gv.style.boxShadow = "none", 500);
-                    
-                    // Штраф за ошибку
-                    score -= 5;
-                    updateScore();
-                }
+        // Положительная вспышка (Золотая)
+        if (flash) {
+            flash.className = 'flash-effect win'; 
+            gsap.fromTo(flash, { scale: 0, opacity: 1 }, { 
+                scale: 40, opacity: 0, duration: 0.8, ease: 'power2.out' 
+            });
+        }
+
+        // Вылет призов и добрых эмоджи
+        var winEmojis = document.getElementById('prize-emojis').value;
+        if (typeof spawnParticles === 'function') {
+            spawnParticles(winEmojis);
+        }
+
+        // Твоя логика перехода к следующему шагу или финалу
+        setTimeout(() => {
+            step++;
+            if (step < sentences.length) {
+                renderStep();
+            } else {
+                showFinalPrize(); // Если есть функция финала
             }
+        }, 1500);
+
+    } else {
+        // --- ОШИБКА (FAIL) ---
+        if (c.assets.afail) new Audio(c.assets.afail).play();
+
+        // ОГНЕННАЯ вспышка (Красная)
+        if (flash) {
+            flash.className = 'flash-effect fire'; 
+            gsap.fromTo(flash, { scale: 0, opacity: 1 }, { 
+                scale: 40, opacity: 0, duration: 0.6, ease: 'expo.out' 
+            });
+        }
+
+        // ВЫЛЕТ НЕГАТИВНЫХ ЭМОДЖИ
+        var loseEmojis = document.getElementById('lose-emojis').value;
+        if (typeof spawnParticles === 'function') {
+            spawnParticles(loseEmojis);
+        }
+
+        // Визуальная индикация краев экрана (красная тень)
+        var gv = document.getElementById('gv');
+        if (gv) {
+            gv.style.boxShadow = "inset 0 0 100px red";
+            setTimeout(() => gv.style.boxShadow = "none", 500);
+        }
+
+        // Штраф за ошибку
+        score -= 5;
+        updateScore();
+    }
+}
 
             function spawnBubbles() {
                 var pot = document.getElementById('cz');
