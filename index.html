@@ -879,39 +879,7 @@ function spawnEmojiEffect(type) {
     setTimeout(() => el.remove(), 2500); // Удаляем после анимации
 }
 
-// ВЫЗЫВАЙ ЭТИ ФУНКЦИИ ПРИ ПРОВЕРКЕ ОТВЕТА:
-
-function onCorrectAnswer() {
-    // 1. Сразу запускаем эмоджи
-    spawnEmojiEffect('correct');
-
-    // 2. Через 2 секунды лопаем пузыри
-    setTimeout(() => {
-        if (typeof popBubbles === "function") popBubbles(); 
-        console.log("Пузыри лопнули!");
-    }, 2000); 
-}
-
-function onWrongAnswer() {
-    // 1. Запускаем пламя (предположим, оно длится 2 секунды)
-    if (typeof startFlame === "function") startFlame();
-
-    // 2. Через 1 секунду после начала пламени вылетает эмоджи
-    // (так он вылетит ровно за 1 сек до угасания, если пламя горит 2 сек)
-    setTimeout(() => {
-        spawnEmojiEffect('wrong');
-    }, 1000);
-}
-    @keyframes emojiRise {
-    0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
-    20% { opacity: 1; }
-    100% { transform: translate(-50%, -500px) scale(2); opacity: 0; }
-}
-
-.emoji-fly-correct, .emoji-fly-wrong {
-    animation: emojiRise 2.5s ease-out forwards;
-}
-    // Инит
+   // Инит
     window.onload = updateCode;
 </script>
 </body>
